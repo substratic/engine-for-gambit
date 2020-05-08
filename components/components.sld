@@ -7,6 +7,7 @@
 
 (define-library (substratic engine components)
   (import (gambit)
+          (substratic engine alist)
           (substratic engine components fps)
           (substratic engine components sprite)
           (substratic engine components collider)
@@ -17,6 +18,7 @@
           (substratic engine components component)
           (substratic engine components controller))
   (export make-component
+          merge-alists  ;; This is used by make-component
           fps-component
           sprite-component
           collider-component

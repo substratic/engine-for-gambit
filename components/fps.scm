@@ -28,5 +28,5 @@
 (define (fps-component)
   (make-component fps
     (frames-per-second #f)
-    (updaters          (add-method '(fps . substratic/engine/components/fps#fps-updater)))
-    (renderers         (add-method '(fps . substratic/engine/components/fps#fps-renderer)))))
+    (updaters          (add-method `(fps ,@fps-updater)))
+    (renderers         (add-method `(fps ,@fps-renderer)))))

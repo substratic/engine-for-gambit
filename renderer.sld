@@ -16,6 +16,7 @@
           color-g
           color-b
           color-a
+          rect
           render-rect
           render-fill-rect
           render-image-rect
