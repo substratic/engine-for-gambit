@@ -7,7 +7,10 @@
 
 (define-macro (case-key . cases)
   ;; Include for string-split
-  (import (substratic engine string))
+  ;; NOTE: Importing with URL prefix seems to be necessary,
+  ;; it looks like module aliases aren't (yet) respected when
+  ;; import is used in a macro body.
+  (import (github.com/substratic engine string))
 
   (define (key-string->test key)
     (cond
