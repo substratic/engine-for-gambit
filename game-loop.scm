@@ -25,9 +25,17 @@
 
   root-node)
 
-(define (game-loop renderer root-node screen-width screen-height #!key (enable-rpc #f) (show-fps #f))
+(define (game-loop renderer
+                   root-node
+                   screen-width
+                   screen-height
+                   #!key
+                   (enable-rpc #f)
+                   (show-fps #f)
+                   (clear-color '(0 0 0)))
   (let* ((game-event-sink (make-event-sink)))
     (set! root-node (prepare-root-node root-node show-fps))
+    (set! clear-color (append clear-color (list 255)))
 
     (when enable-rpc
       (start-rpc-server 44311 (car game-event-sink)))
@@ -55,7 +63,7 @@
           (set! root-node (update-node root-node time-step game-event-sink))
 
           ;; Clear the screen
-          (SDL_SetRenderDrawColor renderer #x00 #x00 #x00 #xFF)
+          (apply SDL_SetRenderDrawColor `(,renderer ,@clear-color))
           (SDL_RenderClear renderer)
 
           ;; Render the screen
