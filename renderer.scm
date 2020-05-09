@@ -20,6 +20,12 @@
 (define (color-a color)
   (cadddr color))
 
+(define (render-line renderer start-pos end-pos color)
+  (SDL_SetRenderDrawBlendMode renderer SDL_BLENDMODE_BLEND)
+  (apply SDL_SetRenderDrawColor (cons renderer color))
+  (SDL_RenderDrawLine renderer (car start-pos) (cdr start-pos)
+                               (car end-pos)   (cdr end-pos)))
+
 (define (render-rect renderer draw-rect color)
   (SDL_SetRenderDrawBlendMode renderer SDL_BLENDMODE_BLEND)
   (apply SDL_SetRenderDrawColor (cons renderer color))
@@ -34,6 +40,9 @@
 (define *shared-dest-rect* #f)
 
 (define (render-image renderer image x y #!key (scale 1.0))
+  (unless *shared-dest-rect*
+    (set! *shared-dest-rect* (alloc-SDL_Rect)))
+
   (SDL_Rect-x-set! *shared-dest-rect* x)
   (SDL_Rect-y-set! *shared-dest-rect* y)
   (SDL_Rect-w-set! *shared-dest-rect* (exact (floor (* scale (image-width image)))))

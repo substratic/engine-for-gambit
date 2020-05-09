@@ -17,8 +17,10 @@
           color-b
           color-a
           rect
+          render-line
           render-rect
           render-fill-rect
+          render-image
           render-image-rect
           render-text-to-surface
           render-text))

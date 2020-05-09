@@ -12,7 +12,8 @@
           transform-x
           transform-y
           transform-width
-          transform-height)
+          transform-height
+          transform-add)
   (begin
 
     (define (make-transform x y width height)
