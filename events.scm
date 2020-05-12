@@ -91,7 +91,8 @@
                    ((equal? event-type SDL_QUIT)    '(engine/quit))
                    ((equal? event-type SDL_KEYDOWN) (make-keyboard-event *sdl-event* 'down))
                    ((equal? event-type SDL_KEYUP)   (make-keyboard-event *sdl-event* 'up))
-                   ((equal? event-type SDL_MOUSEBUTTONUP) (make-mouse-event *sdl-event*))
+                   ((equal? event-type SDL_MOUSEBUTTONDOWN) (make-mouse-event *sdl-event* 'down))
+                   ((equal? event-type SDL_MOUSEBUTTONUP)   (make-mouse-event *sdl-event* 'up))
                    (else #f))))
           (unless (equal? game-event #f)
             (event-sink game-event))
@@ -108,9 +109,19 @@
                                   (key . ,key)
                                   (modifiers . ,modifiers)))))
 
-;; TODO: Populate details from event
-(define (make-mouse-event event)
-  `(mouse/click))
+(define (make-mouse-event event direction)
+  (let* ((button-event (SDL_Event-button event))
+         (button-value (SDL_MouseButtonEvent-button button-event))
+         (button (cond
+                  ((equal? button-value SDL_BUTTON_LEFT) 'left)
+                  ((equal? button-value SDL_BUTTON_RIGHT) 'right)
+                  ((equal? button-value SDL_BUTTON_MIDDLE) 'middle)))
+         (pos-x (SDL_MouseButtonEvent-x button-event))
+         (pos-y (SDL_MouseButtonEvent-y button-event)))
+    (make-event 'mouse/button data: `((direction . ,direction)
+                                      (button . ,button)
+                                      (pos-x . ,pos-x)
+                                      (pos-y . ,pos-y)))))
 
 (define (quit-event-handler event state event-sink)
   (when (and (equal? (event-type event) 'keyboard)
