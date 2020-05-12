@@ -88,8 +88,9 @@
     (SDL_RenderCopy renderer font-texture #f (rect text-x text-y
                                                    (SDL_Surface-w font-surface)
                                                    (SDL_Surface-h font-surface)))
-    (SDL_FreeSurface font-surface)
+    (let ((text-size (cons (SDL_Surface-w font-surface)
+                           (SDL_Surface-h font-surface))))
+      (SDL_FreeSurface font-surface)
+      (SDL_DestroyTexture font-texture)
 
-    (when return-size
-      (cons (SDL_Surface-w font-surface)
-            (SDL_Surface-h font-surface)))))
+      (when return-size text-size))))
