@@ -32,11 +32,9 @@
                    screen-height
                    #!key
                    (enable-rpc #f)
-                   (show-fps #f)
-                   (clear-color '(0 0 0)))
+                   (show-fps #f))
   (let* ((game-event-sink (make-event-sink)))
     (set! root-node (prepare-root-node root-node show-fps))
-    (set! clear-color (append clear-color (list 255)))
 
     (when enable-rpc
       (start-rpc-server 44311 (car game-event-sink)))
