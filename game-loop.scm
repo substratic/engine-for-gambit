@@ -8,7 +8,8 @@
 (define (engine-handler event state event-sink)
   (case (car event)
    ((engine/change-mode)
-    (update-state state (next-node (lambda (unused) (cadr event)))))
+    (update-state state (next-node (lambda (unused)
+                                     (event-data event 'next-mode)))))
    ((engine/quit)
     (update-state state (quit #t)))))
 
@@ -54,7 +55,7 @@
         (with-state root-node (quit next-node)
           (cond
            (next-node
-            (set! root-node (prepare-root-node (next-node renderer) show-fps)))
+            (set! root-node (prepare-root-node (next-node) show-fps)))
            (quit
             (set! root-node #f))))
 
