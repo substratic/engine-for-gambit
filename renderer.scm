@@ -20,6 +20,10 @@
 (define (color-a color)
   (cadddr color))
 
+(define (render-clear renderer r g b)
+  (SDL_SetRenderDrawColor renderer r g b 0)
+  (SDL_RenderClear renderer))
+
 (define (render-line renderer start-pos end-pos color)
   (SDL_SetRenderDrawBlendMode renderer SDL_BLENDMODE_BLEND)
   (apply SDL_SetRenderDrawColor (cons renderer color))

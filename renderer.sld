@@ -17,6 +17,7 @@
           color-b
           color-a
           rect
+          render-clear
           render-line
           render-rect
           render-fill-rect

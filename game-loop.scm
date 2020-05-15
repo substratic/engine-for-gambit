@@ -63,10 +63,6 @@
           ;; Update the game state
           (set! root-node (update-node root-node time-step game-event-sink))
 
-          ;; Clear the screen
-          (apply SDL_SetRenderDrawColor `(,renderer ,@clear-color))
-          (SDL_RenderClear renderer)
-
           ;; Render the screen
           (set! root-node
             (render-node renderer root-node (list 0 0 screen-width screen-height)))
