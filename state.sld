@@ -11,6 +11,7 @@
   (include "state-macros.scm"
            "state.scm")
   (export add-method
+          remove-method
           state?
           state-ref
           state-set!
@@ -20,6 +21,7 @@
           update-in
           update-state
           with-state
+          print-state
           update-state-with-alist
           resolve-procedure
           partial
