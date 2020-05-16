@@ -40,8 +40,12 @@
      ((equal? key "x") '(equal? key SDLK_x))
      ((equal? key "y") '(equal? key SDLK_y))
      ((equal? key "z") '(equal? key SDLK_z))
-     ((equal? key "TAB") '(equal? key SDLK_TAB))
      ((equal? key "C") '(equal? KMOD_LCTRL (bitwise-and mod KMOD_LCTRL)))
+     ((equal? key "M") '(equal? KMOD_LALT  (bitwise-and mod KMOD_LALT)))
+     ((equal? key "TAB") '(equal? key SDLK_TAB))
+     ((equal? key "SPC") '(equal? key SDLK_SPACE))
+     ((equal? key "ESC") '(equal? key SDLK_ESCAPE))
+     ((equal? key "RET") '(equal? key SDLK_RETURN))
      (else #f)))
 
   (define (key-binding->test key-binding)
