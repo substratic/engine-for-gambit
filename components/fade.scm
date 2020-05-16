@@ -6,7 +6,13 @@
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (define-library (substratic engine components fade)
-  (import (gambit))
+  (import (gambit)
+          (substratic engine alist)
+          (substratic engine state)
+          (substratic engine easing)
+          (substratic engine renderer)
+          (substratic engine transform)
+          (substratic engine components component))
   (export screen-fade-component)
   (begin
 
