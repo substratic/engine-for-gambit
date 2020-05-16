@@ -9,6 +9,7 @@
   (import (gambit)
           (substratic engine alist)
           (substratic engine components fps)
+          (substratic engine components fade)
           (substratic engine components sprite)
           (substratic engine components collider)
           (substratic engine components messages)
@@ -18,6 +19,7 @@
           (substratic engine components component)
           (substratic engine components controller))
   (export make-component
+          remove-component
           merge-alists  ;; This is used by make-component
           fps-component
           sprite-component
@@ -26,4 +28,5 @@
           movement-component
           position-component
           animation-component
-          controller-component))
+          controller-component
+          screen-fade-component))

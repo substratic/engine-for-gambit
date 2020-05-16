@@ -41,6 +41,15 @@
          (update-state-with-alist node (append method-fields
                                                (list (cons ',state-key field-values))))))))
 
+(define (remove-component component-name state)
+  ;; TODO: How do we remove *all* methods that a
+  ;; component added?  How can we know which ones?
+  ;; Store a 'components' list with an index?
+
+  (update-state state (updaters  (remove-method component-name))
+                      (handlers  (remove-method component-name))
+                      (renderers (remove-method component-name))))
+
 ;; TODO: Implement 'define-component': it will define a component with
 ;; a function that wraps the output of 'make-component' so that it
 ;; can be invoked with the same type of parameter list.  The function

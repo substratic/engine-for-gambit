@@ -7,6 +7,8 @@
 
 (define-library (substratic engine components component)
   (import (gambit)
-          (substratic engine state))
+          (substratic engine state)
+          (substratic engine macros))
   (include "component.scm")
-  (export make-component))
+  (export make-component
+          remove-component))
