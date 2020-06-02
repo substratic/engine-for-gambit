@@ -31,6 +31,98 @@
 
   (begin
 
+    (define-macro (with-state state field-list . body)
+
+      (define (make-field-ref state-name field-name real-name)
+        `(,field-name (table-ref ,state-name (quote ,real-name))))
+
+      (define (make-field-bindings state-name field-list)
+        (fold (lambda (field-spec field-forms)
+                (append field-forms
+                        (cond
+                         ((symbol? field-spec)
+                          (list (make-field-ref state-name field-spec field-spec)))
+                         ((list? field-spec)
+                          ;; Is a field being renamed with 'as:'?
+                          (if (equal? (cadr field-spec) as:)
+                              (list (make-field-ref state-name (caddr field-spec) (car field-spec)))
+                              (let* ((field-name (car field-spec))
+                                     (binding-name (gensym field-name)))
+                                (append (list (make-field-ref state-name binding-name field-name))
+                                        (make-field-bindings binding-name (cdr field-spec)))))))))
+              '()
+              field-list))
+
+      `(let* ,(make-field-bindings state field-list)
+         ,@body))
+
+    (define-macro (make-state . initial-fields)
+
+      (define (_symbol-or-binding symbol)
+        (let ((symbol-name (symbol->string symbol)))
+          (if (equal? #\! (string-ref symbol-name 0))
+              (string->symbol (substring symbol-name
+                                         1 (string-length symbol-name)))
+              `(quote ,(string->symbol symbol-name)))))
+
+      (define (_make-state-table initial-fields)
+        (let ((initial-size (max (* 2 (length initial-fields))
+                                 5)))
+          `(make-table size: ,initial-size init: #f)))
+
+      (define (_make-state state initial-fields)
+        (map (lambda (field-pair)
+               (let ((field-sym (_symbol-or-binding (car field-pair))))
+                 (if (and (list? (cadr field-pair))
+                          (> (length (cadr field-pair)) 1)
+                          (equal? (caadr field-pair) '>))
+                     (let ((temp-sym (gensym (car field-pair)))
+                           (nested-fields (cdadr field-pair)))
+                       `(let ((,temp-sym ,(_make-state-table nested-fields)))
+                          ,@(apply _make-state `(,temp-sym ,nested-fields))
+                          (state-set! ,state ,field-sym ,temp-sym)))
+                     `(state-set! ,state ,field-sym ,(cadr field-pair)))))
+             initial-fields))
+
+      (let ((state-sym    (gensym 'new-state-))
+            (initial-size (max (* 2 (length initial-fields))
+                               5)))
+        `(let ((,state-sym ,(_make-state-table initial-fields)))
+           ,@(apply _make-state `(,state-sym ,initial-fields))
+           ,state-sym)))
+
+    (define-macro (update-state state . update-pairs)
+
+      (define (_make-state-table initial-fields)
+        (let ((initial-size (max (* 2 (length initial-fields))
+                                 5)))
+          `(make-table size: ,initial-size init: #f)))
+
+      (define (_symbol-or-binding symbol)
+        (let ((symbol-name (symbol->string symbol)))
+          (if (equal? #\! (string-ref symbol-name 0))
+              (string->symbol (substring symbol-name
+                                         1 (string-length symbol-name)))
+              `(quote ,(string->symbol symbol-name)))))
+
+      (define (_update-state state . update-pairs)
+        (map (lambda (update-pair)
+               (let ((field-sym (_symbol-or-binding (car update-pair))))
+                 (if (and (list? (cadr update-pair))
+                          (equal? (caadr update-pair) '>))
+                     (let ((temp-sym (gensym (car update-pair))))
+                       `(let ((,temp-sym (or (table-ref ,state ,field-sym)
+                                             ,(_make-state-table '()))))
+                          ,@(apply _update-state `(,temp-sym ,@(cdadr update-pair)))
+                          (state-set! ,state ,field-sym ,temp-sym)))
+                     `(state-set! ,state ,field-sym ,(cadr update-pair)))))
+             update-pairs))
+
+      (let ((state-sym (gensym 'state-)))
+        `(let ((,state-sym ,state))
+           ,@(apply _update-state `(,state-sym ,@update-pairs))
+           ,state-sym)))
+
     (define (remove value list)
       (fold-right (lambda (item result)
                     (if (equal? item value)
@@ -242,99 +334,7 @@
       ;;       through so it can be inlined?
       (if (symbol? proc-or-symbol)
           (eval proc-or-symbol)
-          proc-or-symbol))
-
-    (define-macro (with-state state field-list . body)
-
-      (define (make-field-ref state-name field-name real-name)
-        `(,field-name (table-ref ,state-name (quote ,real-name))))
-
-      (define (make-field-bindings state-name field-list)
-        (fold (lambda (field-spec field-forms)
-                (append field-forms
-                        (cond
-                         ((symbol? field-spec)
-                          (list (make-field-ref state-name field-spec field-spec)))
-                         ((list? field-spec)
-                          ;; Is a field being renamed with 'as:'?
-                          (if (equal? (cadr field-spec) as:)
-                              (list (make-field-ref state-name (caddr field-spec) (car field-spec)))
-                              (let* ((field-name (car field-spec))
-                                     (binding-name (gensym field-name)))
-                                (append (list (make-field-ref state-name binding-name field-name))
-                                        (make-field-bindings binding-name (cdr field-spec)))))))))
-              '()
-              field-list))
-
-      `(let* ,(make-field-bindings state field-list)
-         ,@body))
-
-    (define-macro (make-state . initial-fields)
-
-      (define (_symbol-or-binding symbol)
-        (let ((symbol-name (symbol->string symbol)))
-          (if (equal? #\! (string-ref symbol-name 0))
-              (string->symbol (substring symbol-name
-                                         1 (string-length symbol-name)))
-              `(quote ,(string->symbol symbol-name)))))
-
-      (define (_make-state-table initial-fields)
-        (let ((initial-size (max (* 2 (length initial-fields))
-                                 5)))
-          `(make-table size: ,initial-size init: #f)))
-
-      (define (_make-state state initial-fields)
-        (map (lambda (field-pair)
-               (let ((field-sym (_symbol-or-binding (car field-pair))))
-                 (if (and (list? (cadr field-pair))
-                          (> (length (cadr field-pair)) 1)
-                          (equal? (caadr field-pair) '>))
-                     (let ((temp-sym (gensym (car field-pair)))
-                           (nested-fields (cdadr field-pair)))
-                       `(let ((,temp-sym ,(_make-state-table nested-fields)))
-                          ,@(apply _make-state `(,temp-sym ,nested-fields))
-                          (state-set! ,state ,field-sym ,temp-sym)))
-                     `(state-set! ,state ,field-sym ,(cadr field-pair)))))
-             initial-fields))
-
-      (let ((state-sym    (gensym 'new-state-))
-            (initial-size (max (* 2 (length initial-fields))
-                               5)))
-        `(let ((,state-sym ,(_make-state-table initial-fields)))
-           ,@(apply _make-state `(,state-sym ,initial-fields))
-           ,state-sym)))
-
-    (define-macro (update-state state . update-pairs)
-
-      (define (_make-state-table initial-fields)
-        (let ((initial-size (max (* 2 (length initial-fields))
-                                 5)))
-          `(make-table size: ,initial-size init: #f)))
-
-      (define (_symbol-or-binding symbol)
-        (let ((symbol-name (symbol->string symbol)))
-          (if (equal? #\! (string-ref symbol-name 0))
-              (string->symbol (substring symbol-name
-                                         1 (string-length symbol-name)))
-              `(quote ,(string->symbol symbol-name)))))
-
-      (define (_update-state state . update-pairs)
-        (map (lambda (update-pair)
-               (let ((field-sym (_symbol-or-binding (car update-pair))))
-                 (if (and (list? (cadr update-pair))
-                          (equal? (caadr update-pair) '>))
-                     (let ((temp-sym (gensym (car update-pair))))
-                       `(let ((,temp-sym (or (table-ref ,state ,field-sym)
-                                             ,(_make-state-table '()))))
-                          ,@(apply _update-state `(,temp-sym ,@(cdadr update-pair)))
-                          (state-set! ,state ,field-sym ,temp-sym)))
-                     `(state-set! ,state ,field-sym ,(cadr update-pair)))))
-             update-pairs))
-
-      (let ((state-sym (gensym 'state-)))
-        `(let ((,state-sym ,state))
-           ,@(apply _update-state `(,state-sym ,@update-pairs))
-           ,state-sym)))))
+          proc-or-symbol))))
 
     ;; (define^ (_keyword-or-binding keyword)
     ;;   (let ((keyword-name (keyword->string keyword)))
