@@ -5,72 +5,83 @@
 ;; License, v. 2.0. If a copy of the MPL was not distributed with this
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-(define (engine-handler event state event-sink)
-  (case (car event)
-   ((engine/change-mode)
-    (update-state state (next-node (lambda (unused)
-                                     (event-data event 'next-mode)))))
-   ((engine/quit)
-    (update-state state (quit #t)))))
+(define-library (substratic engine loop)
+  (import (gambit)
+          (substratic sdl2)
+          (substratic engine rpc)
+          (substratic engine node)
+          (substratic engine state)
+          (substratic engine events)
+          (substratic engine components))
+  (export game-loop)
+  (begin
 
-(define (prepare-root-node root-node show-fps)
-  (when show-fps
-    (set! root-node ((fps-component) root-node)))
+    (define (engine-handler event state event-sink)
+      (case (car event)
+        ((engine/change-mode)
+         (update-state state (next-node (lambda (unused)
+                                          (event-data event 'next-mode)))))
+        ((engine/quit)
+         (update-state state (quit #t)))))
 
-  ;; Insert the engine handler at the beginning of the list
-  ;; so that it can short cut application of remaining handlers
-  (update-state root-node
-    (quit      #f)
-    (next-node #f)
-    (handlers (lambda (handlers) (cons `(engine ,@engine-handler) handlers))))
+    (define (prepare-root-node root-node show-fps)
+      (when show-fps
+        (set! root-node ((fps-component) root-node)))
 
-  root-node)
+      ;; Insert the engine handler at the beginning of the list
+      ;; so that it can short cut application of remaining handlers
+      (update-state root-node
+                    (quit      #f)
+                    (next-node #f)
+                    (handlers (lambda (handlers) (cons `(engine ,@engine-handler) handlers))))
 
-(define (game-loop renderer
-                   root-node
-                   screen-width
-                   screen-height
-                   #!key
-                   (enable-rpc #f)
-                   (show-fps #f))
-  (let* ((game-event-sink (make-event-sink)))
-    (set! root-node (prepare-root-node root-node show-fps))
+      root-node)
 
-    (when enable-rpc
-      (start-rpc-server 44311 (car game-event-sink)))
+    (define (game-loop renderer
+                       root-node
+                       screen-width
+                       screen-height
+                       #!key
+                       (enable-rpc #f)
+                       (show-fps #f))
+      (let* ((game-event-sink (make-event-sink)))
+        (set! root-node (prepare-root-node root-node show-fps))
 
-    (let next-frame ((last-frame-time (SDL_GetTicks)))
-      (let* ((current-frame-time (SDL_GetTicks))
-             (time-step (/ (- current-frame-time last-frame-time) 1000.0)))
+        (when enable-rpc
+          (start-rpc-server 44311 (car game-event-sink)))
 
-        ;; Poll for SDL events
-        (poll-sdl-events (car game-event-sink))
+        (let next-frame ((last-frame-time (SDL_GetTicks)))
+          (let* ((current-frame-time (SDL_GetTicks))
+                 (time-step (/ (- current-frame-time last-frame-time) 1000.0)))
 
-        ;; Dispatch new events
-        (set! root-node (dispatch-events game-event-sink root-node))
+            ;; Poll for SDL events
+            (poll-sdl-events (car game-event-sink))
 
-        ;; Any root node changes needed?
-        (with-state root-node (quit next-node)
-          (cond
-           (next-node
-            (set! root-node (prepare-root-node (next-node) show-fps)))
-           (quit
-            (set! root-node #f))))
+            ;; Dispatch new events
+            (set! root-node (dispatch-events game-event-sink root-node))
 
-        (when root-node
-          ;; Update the game state
-          (set! root-node (update-node root-node time-step game-event-sink))
+            ;; Any root node changes needed?
+            (with-state root-node (quit next-node)
+                        (cond
+                         (next-node
+                          (set! root-node (prepare-root-node (next-node) show-fps)))
+                         (quit
+                          (set! root-node #f))))
 
-          ;; Render the screen
-          (set! root-node
-            (render-node renderer root-node (list 0 0 screen-width screen-height)))
+            (when root-node
+              ;; Update the game state
+              (set! root-node (update-node root-node time-step game-event-sink))
 
-          ;; Update the screen
-          (SDL_RenderPresent renderer)
+              ;; Render the screen
+              (set! root-node
+                (render-node renderer root-node (list 0 0 screen-width screen-height)))
 
-          ;; Print an error if any
-          (if (not (equal? "" (SDL_GetError)))
-            (println (SDL_GetError)))
+              ;; Update the screen
+              (SDL_RenderPresent renderer)
 
-          ;; Run the next frame
-          (next-frame current-frame-time))))))
+              ;; Print an error if any
+              (if (not (equal? "" (SDL_GetError)))
+                  (println (SDL_GetError)))
+
+              ;; Run the next frame
+              (next-frame current-frame-time))))))))

@@ -5,84 +5,102 @@
 ;; License, v. 2.0. If a copy of the MPL was not distributed with this
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-(define *assets-base-path* "./dist/assets")
+(define-library (substratic engine assets)
+  (import (gambit)
+          (substratic sdl2)
+          (substratic engine transform))
+  (export load-asset
+          assets-path
+          assets-base-path-set!
+          image-loader-set!
+          image-width
+          image-height
+          image-texture
+          rect
+          *default-font*
+          *default-font-small*
+          load-default-fonts)
 
-(define (assets-base-path-set! assets-base-path)
-  (set! *assets-base-path* assets-base-path))
+  (begin
 
-(define (assets-path subpath)
-  (path-normalize subpath #f *assets-base-path*))
+    (define *assets-base-path* "./dist/assets")
 
-(define *image-loader* #f)
+    (define (assets-base-path-set! assets-base-path)
+      (set! *assets-base-path* assets-base-path))
 
-(define (image-loader-set! image-loader)
-  (set! *image-loader* image-loader))
+    (define (assets-path subpath)
+      (path-normalize subpath #f *assets-base-path*))
 
-(define (load-asset asset-path #!optional (asset-cache #f))
-  (let ((ext (path-extension asset-path)))
-    (cond
-     ((equal? ext ".png")
-      (if *image-loader*
-          (*image-loader* (assets-path asset-path))
-          (raise (string-append "load-asset: No *image-loader* is registered for file: " asset-path))))
-     ((equal? ext ".scm")
-      (read (open-file (assets-path asset-path))))
-     (else (raise (string-append "load-asset: Unexpected file extension: " asset-path))))))
+    (define *image-loader* #f)
 
-(define (set-rect! rect x y width height)
-  (SDL_Rect-x-set! rect (exact (truncate x)))
-  (SDL_Rect-y-set! rect (exact (truncate y)))
-  (SDL_Rect-w-set! rect (exact (truncate width)))
-  (SDL_Rect-h-set! rect (exact (truncate height)))
-  rect)
+    (define (image-loader-set! image-loader)
+      (set! *image-loader* image-loader))
 
-(define (make-rect x y width height)
-  (let ((rect (alloc-SDL_Rect)))
-    (set-rect! rect x y width height)))
+    (define (load-asset asset-path #!optional (asset-cache #f))
+      (let ((ext (path-extension asset-path)))
+        (cond
+         ((equal? ext ".png")
+          (if *image-loader*
+              (*image-loader* (assets-path asset-path))
+              (raise (string-append "load-asset: No *image-loader* is registered for file: " asset-path))))
+         ((equal? ext ".scm")
+          (read (open-file (assets-path asset-path))))
+         (else (raise (string-append "load-asset: Unexpected file extension: " asset-path))))))
 
-(define *reusable-rect* #f)
+    (define (set-rect! rect x y width height)
+      (SDL_Rect-x-set! rect (exact (truncate x)))
+      (SDL_Rect-y-set! rect (exact (truncate y)))
+      (SDL_Rect-w-set! rect (exact (truncate width)))
+      (SDL_Rect-h-set! rect (exact (truncate height)))
+      rect)
 
-(define rect
-  (case-lambda
-   ((transform)
-    (rect (transform-x transform)
-          (transform-y transform)
-          (transform-width  transform)
-          (transform-height transform)))
-   ((x y width height)
-    (unless *reusable-rect*
-      (set! *reusable-rect* (make-rect 0 0 0 0)))
-    (set-rect! *reusable-rect* x y width height))))
+    (define (make-rect x y width height)
+      (let ((rect (alloc-SDL_Rect)))
+        (set-rect! rect x y width height)))
 
-(define (load-image renderer image-path)
-  (let* ((img (IMG_Load image-path))
-         (texture (SDL_CreateTextureFromSurface renderer img)))
-    (list (SDL_Surface-w img) (SDL_Surface-h img) texture)))
+    (define *reusable-rect* #f)
 
-(define (image-width image)
-  (car image))
+    (define rect
+      (case-lambda
+        ((transform)
+         (rect (transform-x transform)
+               (transform-y transform)
+               (transform-width  transform)
+               (transform-height transform)))
+        ((x y width height)
+         (unless *reusable-rect*
+           (set! *reusable-rect* (make-rect 0 0 0 0)))
+         (set-rect! *reusable-rect* x y width height))))
 
-(define (image-height image)
-  (cadr image))
+    (define (load-image renderer image-path)
+      (let* ((img (IMG_Load image-path))
+             (texture (SDL_CreateTextureFromSurface renderer img)))
+        (list (SDL_Surface-w img) (SDL_Surface-h img) texture)))
 
-(define (image-texture image)
-  (caddr image))
+    (define (image-width image)
+      (car image))
 
-(define (load-font font-path font-size)
-  (let* ((font   (TTF_OpenFont font-path font-size))
-         (height (TTF_FontHeight font)))
-    (cons font height)))
+    (define (image-height image)
+      (cadr image))
 
-(define (font-height font)
-  (cdr font))
+    (define (image-texture image)
+      (caddr image))
 
-;; TODO: Implement font atlases!
-(define (generate-font-atlas font output-path)
-  #f)
+    (define (load-font font-path font-size)
+      (let* ((font   (TTF_OpenFont font-path font-size))
+             (height (TTF_FontHeight font)))
+        (cons font height)))
 
-(define *default-font* #f)
-(define *default-font-small* #f)
+    (define (font-height font)
+      (cdr font))
 
-(define (load-default-fonts)
-  (set! *default-font* (load-font (assets-path "fonts/Thintel.ttf") 32))
-  (set! *default-font-small* (load-font (assets-path "fonts/Thintel.ttf") 16)))
+    ;; TODO: Implement font atlases!
+    (define (generate-font-atlas font output-path)
+      #f)
+
+    (define *default-font* #f)
+    (define *default-font-small* #f)
+
+    (define (load-default-fonts)
+      (set! *default-font* (load-font (assets-path "fonts/Thintel.ttf") 32))
+      (set! *default-font-small* (load-font (assets-path "fonts/Thintel.ttf") 16)))))
