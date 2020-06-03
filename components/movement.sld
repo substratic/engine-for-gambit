@@ -15,7 +15,7 @@
 
   (begin
 
-    (define (movement-updater node time-step event-sink)
+    (define (movement-updater node context time-step event-sink)
       (with-state node (position
                         (position pos-x pos-y)
                         (movement vel axis))
@@ -33,7 +33,7 @@
                           new-state)
                         node))))
 
-    (define (movement-handler event node event-sink)
+    (define (movement-handler node context event event-sink)
       (with-state node (id (movement vel vel-max accel axis))
                   (let ((event-type (car event)))
                     (when (and (equal? event-type 'entity/move)

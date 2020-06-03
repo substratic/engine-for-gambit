@@ -14,17 +14,18 @@
           (substratic engine transform)
           (substratic engine components component))
   (export screen-fade-component)
+
   (begin
 
-    (define (screen-fade-updater state time-step event-sink)
-      (update-state state (screen-fade
+    (define (screen-fade-updater node context time-step event-sink)
+      (update-state node (screen-fade
                            (> (current-time (lambda (time)
                                               (+ time time-step)))))))
 
-    (define (screen-fade-renderer renderer state transform)
-      (with-state state ((screen-fade current-time duration))
+    (define (screen-fade-renderer node context renderer)
+      (with-state node ((screen-fade current-time duration))
         (render-fill-rect renderer
-                          `(0 0 ,(transform-width transform) ,(transform-height transform))
+                          `(0 0 ,(state-ref context 'screen-width ) ,(state-ref context 'screen-height))
                           `(0 0 0 ,(exact (floor (* 255
                                                     (- 1.0
                                                        (ease-in-out (/ current-time

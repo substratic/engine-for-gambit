@@ -12,7 +12,6 @@
           (substratic engine assets)
           (substratic engine events)
           (substratic engine renderer)
-          (substratic engine transform)
           (substratic engine components component))
   (export messages-component)
 
@@ -21,10 +20,10 @@
     (define *message-duration* 4.0)
     (define *message-fade-duration* 1.0)
 
-    (define (messages-handler event state event-sink)
+    (define (messages-handler node context event event-sink)
       (case (event-type event)
         ((message)
-         (update-state state
+         (update-state node
                        (messages (> (messages (lambda (messages)
                                                 (append messages (list (cons (event-data event 'message)
                                                                              0.0)))))))))))
@@ -39,15 +38,15 @@
             '()
             messages))
 
-    (define (messages-updater state time-step event-sink)
-      (with-state state ((messages messages))
+    (define (messages-updater node context time-step event-sink)
+      (with-state node ((messages messages))
                   ;; TODO: Move update-messages here
-                  (update-state state
+                  (update-state node
                                 (messages (> (messages (partial update-messages time-step)))))))
 
-    (define (messages-renderer renderer node transform)
+    (define (messages-renderer node context renderer)
       (with-state node ((messages messages))
-                  (let* ((screen-height (transform-height transform))
+                  (let* ((screen-height (state-ref context 'screen-height))
                          (message-count (length messages))
                          (message-height 13)
                          (message-y (- screen-height (* message-count message-height))))

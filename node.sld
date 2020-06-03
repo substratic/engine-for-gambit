@@ -57,50 +57,51 @@
             '()
             (state-fields node)))
 
-    (define (dispatch-events event-sink state)
+    (define (dispatch-events node context event-sink)
       (let* ((event-send (car event-sink))
              (event-receive (cdr event-sink)))
         (let process-events ((events (event-receive #t)))
           (when (pair? events)
             (let* ((current-event (car events)))
-              (set! state (apply-event-handlers current-event
-                                                state
-                                                event-send))
+              (set! node (apply-event-handlers node
+                                               context
+                                               current-event
+                                               event-send))
               (process-events (append (cdr events)
                                       (event-receive #t))))))
 
-        state))
+        node))
 
-    (define (invoke-node-listeners node event-sink)
+    (define (invoke-node-listeners node context event-sink)
       (for-each (lambda (listener)
-                  ((resolve-procedure (cdr listener)) node event-sink))
+                  ((resolve-procedure (cdr listener)) node context event-sink))
                 (or (state-ref node 'listeners)
                     '())))
 
-    (define (update-node node time-step parent-event-sink)
+    (define (update-node node context time-step parent-event-sink)
       (let ((event-sink (if (pair? parent-event-sink)
                             (car parent-event-sink)
                             parent-event-sink)))
         (set! node (fold (lambda (updater node)
-                           ((resolve-procedure (cdr updater)) node time-step event-sink))
+                           ((resolve-procedure (cdr updater)) node context time-step event-sink))
                          node
                          (state-ref node 'updaters)))
 
         ;; Dispatch to update listeners
-        (invoke-node-listeners node event-sink)
+        (invoke-node-listeners node context event-sink)
 
         ;; Dispatch any events raised during the update
         (if (pair? parent-event-sink)
-            (dispatch-events parent-event-sink node)
+            (dispatch-events node context parent-event-sink)
             node)))
 
-    (define (render-node renderer node transform)
+    (define (render-node node context renderer)
       ;; In some cases, a renderer will need to return a new state if
       ;; it needs to cache something that can only be calculated at
       ;; render time (like sizes of UI elements)
       (let ((renderers (state-ref node 'renderers)))
         (fold (lambda (r new-node)
-                (let ((next-node ((resolve-procedure (cdr r)) renderer new-node transform)))
+                (let ((next-node ((resolve-procedure (cdr r)) new-node context renderer)))
                   (if (state? next-node)
                       next-node
                       node)))

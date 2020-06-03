@@ -29,7 +29,7 @@
                     ,(* scale frame-width)
                     ,(* scale frame-height))))
 
-    (define (sprite-renderer renderer node transform)
+    (define (sprite-renderer node context renderer)
       (with-state node ((sprite   sprite-image frame-index
                                   frame-width frame-height
                                   frame-rows frame-columns)

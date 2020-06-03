@@ -16,14 +16,14 @@
 
   (begin
 
-    (define (collider-handler event node event-sink)
+    (define (collider-handler node context event event-sink)
       (case (event-type event)
         ((entity/collision)
          (with-state node ((collider on-collision))
                      (when on-collision
                        ((resolve-procedure on-collision) event node event-sink))))))
 
-    (define (collider-renderer renderer node transform)
+    (define (collider-renderer node context renderer)
       ;; Check for a global flag for rendering colliders
       (when (render-colliders?)
         (let ((collider-rect (resolve-collider-rect node)))

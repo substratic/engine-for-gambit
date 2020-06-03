@@ -18,7 +18,7 @@
 
   (begin
 
-    (define (controller-handler event node event-sink)
+    (define (controller-handler node context event event-sink)
       (with-state node ((controller direction-stack
                                     direction-mask
                                     button-mask))

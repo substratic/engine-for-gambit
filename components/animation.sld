@@ -15,7 +15,7 @@
 
   (begin
 
-    (define (animation-updater node time-step event-sink)
+    (define (animation-updater node context time-step event-sink)
       (with-state node (sprite
                         animation
                         (animation current-frames

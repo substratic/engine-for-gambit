@@ -16,13 +16,13 @@
   (export game-loop)
   (begin
 
-    (define (engine-handler event state event-sink)
+    (define (engine-handler node context event event-sink)
       (case (car event)
         ((engine/change-mode)
-         (update-state state (next-node (lambda (unused)
-                                          (event-data event 'next-mode)))))
+         (update-state node (next-node (lambda (unused)
+                                         (event-data event 'next-mode)))))
         ((engine/quit)
-         (update-state state (quit #t)))))
+         (update-state node (quit #t)))))
 
     (define (prepare-root-node root-node show-fps)
       (when show-fps
@@ -44,7 +44,9 @@
                        #!key
                        (enable-rpc #f)
                        (show-fps #f))
-      (let* ((game-event-sink (make-event-sink)))
+      (let* ((game-event-sink (make-event-sink))
+             (context (make-state (screen-width screen-width)
+                                  (screen-height screen-height))))
         (set! root-node (prepare-root-node root-node show-fps))
 
         (when enable-rpc
@@ -58,7 +60,7 @@
             (poll-sdl-events (car game-event-sink))
 
             ;; Dispatch new events
-            (set! root-node (dispatch-events game-event-sink root-node))
+            (set! root-node (dispatch-events root-node context game-event-sink))
 
             ;; Any root node changes needed?
             (with-state root-node (quit next-node)
@@ -70,11 +72,11 @@
 
             (when root-node
               ;; Update the game state
-              (set! root-node (update-node root-node time-step game-event-sink))
+              (set! root-node (update-node root-node context time-step game-event-sink))
 
               ;; Render the screen
               (set! root-node
-                (render-node renderer root-node (list 0 0 screen-width screen-height)))
+                (render-node root-node context renderer))
 
               ;; Update the screen
               (SDL_RenderPresent renderer)
