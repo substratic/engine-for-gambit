@@ -27,7 +27,10 @@
 
     (define (make-node type-symbol #!key (tag #f) (component-values '()) . component-procs)
       (fold (lambda (component-proc node)
-              (component-proc node component-values))
+              ;; Allow component procedures to be conditionally omitted
+              (if (equal? component-proc #!void)
+                  node
+                  (component-proc node component-values)))
             (make-state
              (id        (get-next-node-id!))
              (type      type-symbol)
