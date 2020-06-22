@@ -76,8 +76,8 @@
                  cases)
           (else 'not-handled))))
 
-    (define (handle-key key-event . handlers)
-      (when (equal? (event-data key-event 'direction) 'up)
+    (define (handle-key key-event #!key (direction 'down) #!rest handlers)
+      (when (equal? (event-data key-event 'direction) direction)
         (let ((key (event-data key-event 'key))
               (mod (event-data key-event 'modifiers)))
           (let next-handler ((remaining-handlers handlers))
