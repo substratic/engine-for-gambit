@@ -65,9 +65,11 @@
     (define *shared-src-rect* #f)
     (define *shared-dest-rect* #f)
 
-    (define (render-image renderer image x y #!key (scale 1.0))
+    (define (render-image renderer image x y #!key (scale 1.0) (alpha 255))
       (unless *shared-dest-rect*
         (set! *shared-dest-rect* (alloc-SDL_Rect)))
+
+      (SDL_SetTextureAlphaMod (image-texture image) alpha)
 
       (SDL_Rect-x-set! *shared-dest-rect* x)
       (SDL_Rect-y-set! *shared-dest-rect* y)
@@ -75,10 +77,16 @@
       (SDL_Rect-h-set! *shared-dest-rect* (exact (floor (* scale (image-height image)))))
       (SDL_RenderCopy renderer (image-texture image) #f *shared-dest-rect*))
 
-    (define (render-image-rect renderer image src-x src-y src-width src-height dest-x dest-y #!key (scale 1.0))
+    (define (render-image-rect renderer image
+                               src-x src-y
+                               src-width src-height
+                               dest-x dest-y
+                               #!key (scale 1.0) (alpha 255))
       (unless *shared-src-rect*
         (set! *shared-src-rect* (alloc-SDL_Rect))
         (set! *shared-dest-rect* (alloc-SDL_Rect)))
+
+      (SDL_SetTextureAlphaMod (image-texture image) alpha)
 
       (SDL_Rect-x-set! *shared-src-rect* src-x)
       (SDL_Rect-y-set! *shared-src-rect* src-y)
