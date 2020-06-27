@@ -13,7 +13,8 @@
           (substratic engine events)
           (substratic engine renderer)
           (substratic engine components component))
-  (export messages-component)
+  (export messages-component
+          print-message)
 
   (begin
 
@@ -27,6 +28,12 @@
                        (messages (> (messages (lambda (messages)
                                                 (append messages (list (cons (event-data event 'message)
                                                                              0.0)))))))))))
+    (define (print-message event-sink . message-parts)
+      (event-sink
+        (make-event 'message data: `((message . ,(with-output-to-string
+                                                   (lambda ()
+                                                     (apply print message-parts))))))))
+
     (define (update-messages time-step messages)
       (fold (lambda (message-details updated-messages)
               (let ((new-time (+ (cdr message-details) time-step)))
