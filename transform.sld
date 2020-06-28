@@ -6,8 +6,7 @@
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (define-library (substratic engine transform)
-  (import (gambit)
-          (substratic sdl2))
+  (import (gambit))
   (export make-transform
           transform-x
           transform-y

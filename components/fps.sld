@@ -11,7 +11,6 @@
           (substratic engine state)
           (substratic engine assets)
           (substratic engine renderer)
-          (substratic engine transform)
           (substratic engine components component))
   (export fps-component)
 

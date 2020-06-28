@@ -8,8 +8,7 @@
 (define-library (substratic engine renderer)
   (import (gambit)
           (substratic sdl2)
-          (substratic engine assets)
-          (substratic engine transform))
+          (substratic engine assets))
   (export make-color
           color-r
           color-g
