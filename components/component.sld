@@ -7,10 +7,12 @@
 
 (define-library (substratic engine components component)
   (import (gambit)
+          (substratic engine alist)
           (substratic engine state)
           (substratic engine macros))
   (export make-component
-          remove-component)
+          remove-component
+          merge-alists)
 
   (begin
 
