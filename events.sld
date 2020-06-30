@@ -126,10 +126,14 @@
              (keysym (SDL_KeyboardEvent-keysym key-event))
              (key (SDL_Keysym-sym keysym))
              (modifiers (SDL_Keysym-mod keysym))
-             (repeat (equal? 0 (SDL_KeyboardEvent-repeat key-event))))
-        (make-event 'keyboard data: `((direction . ,event-type)
-                                      (key . ,key)
-                                      (modifiers . ,modifiers)))))
+             (repeat (SDL_KeyboardEvent-repeat key-event)))
+        ;; Avoid double-keypress events but allow future repeats
+        (if (equal? repeat 1)
+            #f
+            (make-event 'keyboard data: `((direction . ,event-type)
+                                          (key . ,key)
+                                          (repeat . ,(- repeat 1))
+                                          (modifiers . ,modifiers))))))
 
     (define (make-mouse-event event direction)
       (let* ((button-event (SDL_Event-button event))
