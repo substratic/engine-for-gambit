@@ -8,7 +8,8 @@
 (define-library (substratic engine string)
   (import (gambit))
   (export string-starts-with?
-          string-split)
+          string-split
+          string-join)
 
   (begin
 
@@ -31,4 +32,14 @@
               (when (< start-index i)
                 (set! parts (append parts (list (substring string start-index i)))))))
 
-        parts))))
+        parts))
+
+    (define (string-join strings #!key (delimiter " ")
+                                 (formatter identity))
+      (let next-string ((strings (cdr strings))
+                        (joined (formatter (car strings))))
+        (if (pair? strings)
+            (next-string
+             (cdr strings)
+             (string-append joined delimiter (formatter (car strings))))
+            joined)))))
