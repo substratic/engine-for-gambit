@@ -6,7 +6,8 @@
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (define-library (substratic engine rpc)
-  (import (gambit))
+  (import (gambit)
+          (substratic engine events))
   (export start-rpc-server)
 
   (begin
@@ -38,13 +39,17 @@
                                   (*rpc-client-receiver*
                                    `(response ,(cadr message) ,(cons `(request-id . ,request-id)
                                                                      response))))))
-                 (event-sink (make-event (cadr message)
-                                         data: (cons `(callback . ,callback) args)))))
+                 (with-output-to-port ##stdout-port
+                   (lambda ()
+                     (event-sink (make-event (cadr message)
+                                             data: (cons `(callback . ,callback) args)))))))
               ((event)
-               (event-sink (make-event (cadr message)
-                                       data: (if (list? (caddr message))
-                                                 (caddr message)
-                                                 '()))))))
+               (with-output-to-port ##stdout-port
+                 (lambda ()
+                   (event-sink (make-event (cadr message
+                                            data: (if (list? (caddr message))
+                                                      (caddr message)
+                                                      '())))))))))
           (next-message))))
 
     (define (start-rpc-server port event-sink)
