@@ -8,7 +8,6 @@
 (define-library (substratic engine loop)
   (import (gambit)
           (substratic sdl2)
-          (substratic engine rpc)
           (substratic engine node)
           (substratic engine state)
           (substratic engine events)
@@ -42,15 +41,12 @@
                        screen-width
                        screen-height
                        #!key
-                       (enable-rpc #f)
+                       (event-sink #f)
                        (show-fps #f))
-      (let* ((game-event-sink (make-event-sink))
+      (let* ((game-event-sink (or event-sink (make-event-sink)))
              (context (make-state (screen-width screen-width)
                                   (screen-height screen-height))))
         (set! root-node (prepare-root-node root-node show-fps))
-
-        (when enable-rpc
-          (start-rpc-server 44311 (car game-event-sink)))
 
         (let next-frame ((last-frame-time (SDL_GetTicks)))
           (let* ((current-frame-time (SDL_GetTicks))
