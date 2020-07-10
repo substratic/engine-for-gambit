@@ -7,13 +7,21 @@
 
 (define-library (substratic engine macros)
   (import (gambit))
-  (export ->)
+  (export -> ->>)
   (begin
 
     ;; This module contains generally useful macros that might be moved out into
     ;; a separate library (and re-exported here) at a later date.
 
     (define-macro (-> . forms)
+      (let ((result-sym (gensym 'pipeline-)))
+        `(let ((,result-sym ,(car forms)))
+           ,@(map (lambda (form)
+                    `(set! ,result-sym ,(append (list (car form)) (list result-sym) (cdr form))))
+                  (cdr forms))
+           ,result-sym)))
+
+    (define-macro (->> . forms)
       (let ((result-sym (gensym 'pipeline-)))
         `(let ((,result-sym ,(car forms)))
            ,@(map (lambda (form)
