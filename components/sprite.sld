@@ -7,6 +7,7 @@
 
 (define-library (substratic engine components sprite)
   (import (gambit)
+          (substratic engine node)
           (substratic engine alist)
           (substratic engine state)
           (substratic engine assets)

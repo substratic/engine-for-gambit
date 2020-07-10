@@ -62,7 +62,7 @@
 
     (define (alist-was-converted? alist)
       (and (alist? alist)
-          (equal? (caar alist) '__converted)))
+           (equal? (caar alist) '__converted)))
 
     (define (assoc-in key value alist)
       (let* ((found #f)

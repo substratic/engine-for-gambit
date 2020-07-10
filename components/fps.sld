@@ -7,12 +7,15 @@
 
 (define-library (substratic engine components fps)
   (import (gambit)
+          (substratic engine node)
           (substratic engine alist)
           (substratic engine state)
           (substratic engine assets)
           (substratic engine renderer)
           (substratic engine components component))
-  (export fps-component)
+  (export fps-component
+          fps-renderer
+          fps-updater)
 
   (begin
 

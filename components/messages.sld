@@ -7,7 +7,7 @@
 
 (define-library (substratic engine components messages)
   (import (gambit)
-          (substratic engine alist)
+          (substratic engine node)
           (substratic engine state)
           (substratic engine assets)
           (substratic engine events)

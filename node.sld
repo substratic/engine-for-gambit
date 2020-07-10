@@ -13,6 +13,9 @@
           node-id
           node-type
           node-components
+          add-method
+          add-method2
+          remove-method
           update-node
           render-node
           dispatch-events)
@@ -59,6 +62,34 @@
                 (else (append filtered-fields (list field)))))
             '()
             (state-fields node)))
+
+    (define-macro (add-method2 component method-name)
+      (pp `(add-method (cons ',component (lambda (node context renderer)
+                                          (,method-name node context renderer)))))
+      `(add-method (cons ',component (lambda (node context renderer)
+                                      (,method-name node context renderer)))))
+
+    (define (add-method method-pair #!key (component #f))
+      (let ((method-pairs (if (list? method-pair)
+                              method-pair
+                              (list method-pair))))
+        (lambda (method-list)
+          (fold (lambda (method methods)
+                  (update-in methods (car method) (lambda (v) (cdr method))))
+                method-list
+                method-pairs))))
+
+    (define (remove-method method)
+      (lambda (method-list)
+        (if method-list
+            (remp (lambda (method-pair)
+                    (equal? (car method-pair) method-name))
+                  method-list)
+            method-list)))
+
+    (define (remove-component-methods node component)
+      ;; Loop through method lists and remove all for the named component
+      node)
 
     (define (dispatch-events node context event-sink)
       (let* ((event-send (car event-sink))

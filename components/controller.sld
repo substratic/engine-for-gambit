@@ -8,6 +8,7 @@
 (define-library (substratic engine components controller)
   (import (gambit)
           (substratic sdl2)
+          (substratic engine node)
           (substratic engine alist)
           (substratic engine state)
           (substratic engine config)

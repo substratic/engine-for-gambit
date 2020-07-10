@@ -192,24 +192,6 @@
       (lambda (final-arg)
         (apply proc (append args (list final-arg)))))
 
-    (define (add-method method-pair)
-      (let ((method-pairs (if (list? method-pair)
-                              method-pair
-                              (list method-pair))))
-        (lambda (method-list)
-          (fold (lambda (method methods)
-                  (update-in methods (car method) (lambda (v) (cdr method))))
-                method-list
-                method-pairs))))
-
-    (define (remove-method method-name)
-      (lambda (method-list)
-        (if method-list
-            (remp (lambda (method-pair)
-                    (equal? (car method-pair) method-name))
-                  method-list)
-            method-list)))
-
     (define (resolve-proc-or-value proc-or-value . params)
       (if (procedure? proc-or-value)
           (apply proc-or-value params)
