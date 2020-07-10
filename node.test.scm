@@ -6,11 +6,11 @@
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (import (_test)
-        (substratic engine node)
-        (substratic engine alist)
-        (substratic engine state)
-        (substratic engine events)
-        (substratic engine components component))
+        (node)
+        (alist)
+        (state)
+        (events)
+        (components component))
 
 (define (test-component a b)
   (make-component test

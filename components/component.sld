@@ -7,9 +7,10 @@
 
 (define-library (substratic engine components component)
   (import (gambit)
-          (substratic engine alist)
-          (substratic engine state)
-          (substratic engine macros))
+          (node)
+          (alist)
+          (state)
+          (macros))
   (export make-component
           make-component-new
           make-component-lambda

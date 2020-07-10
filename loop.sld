@@ -8,10 +8,10 @@
 (define-library (substratic engine loop)
   (import (gambit)
           (substratic sdl2)
-          (substratic engine node)
-          (substratic engine state)
-          (substratic engine events)
-          (substratic engine components))
+          (node)
+          (state)
+          (events)
+          (components))
   (export game-loop)
   (begin
 

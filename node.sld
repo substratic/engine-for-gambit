@@ -7,8 +7,8 @@
 
 (define-library (substratic engine node)
   (import (gambit)
-          (substratic engine state)
-          (substratic engine events))
+          (state)
+          (events))
   (export make-node
           node-id
           node-type

@@ -6,9 +6,9 @@
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 (import (_test)
-        (substratic engine alist)
-        (substratic engine state)
-        (substratic engine components component))
+        (alist)
+        (state)
+        (components component))
 
 (test-group "Component functions"
   (test-group "apply overlay variables"

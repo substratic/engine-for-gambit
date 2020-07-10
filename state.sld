@@ -7,7 +7,7 @@
 
 (define-library (substratic engine state)
   (import (gambit)
-          (substratic engine alist))
+          (alist))
   (export add-method
           remove-method
           state?

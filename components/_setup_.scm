@@ -5,5 +5,4 @@
 ;; License, v. 2.0. If a copy of the MPL was not distributed with this
 ;; file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-(define-module-alias (substratic sdl2)   (github.com/substratic sdl2))
-(define-module-alias (substratic engine) (github.com/substratic engine))
+(define-module-alias (substratic sdl2) (github.com/substratic sdl2))

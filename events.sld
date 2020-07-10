@@ -7,8 +7,8 @@
 
 (define-library (substratic engine events)
   (import (gambit)
-          (substratic sdl2)
-          (substratic engine state))
+          (state)
+          (substratic sdl2))
   (export make-event
           make-event-sink
           make-keyboard-event
